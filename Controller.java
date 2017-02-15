@@ -1,19 +1,11 @@
-package SongLib.view;
-
-import java.util.Collection;
-import java.util.List;
-
+package view;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
@@ -33,121 +25,117 @@ public class Controller {
 	@FXML TextField album_else;
 	@FXML TextField year_else;
 	
-	//ListView information
-	ListView<String> listView;                
-    private ObservableList<String> obsList;       
-    public void start() { 
-    	
-    }
-	Stage mainStage;
+	   @FXML         
+	   ListView<Songs> listView;                
+
+	   ObservableList<Songs> obsList;              
+	   public void start(Stage mainStage) {                
+	      // create an ObservableList 
+	      // from an ArrayList              
+	      obsList = FXCollections.observableArrayList();                                      
+	      listView.setItems(obsList);  
+	      
+	      // select the first item
+	      listView.getSelectionModel().select(0);
+
+	      // set listener for the items
+	      listView.setCellFactory(param -> new ListCell<Songs>() {
+	    	    @Override
+	    	    protected void updateItem(Songs song, boolean empty) {
+	    	        super.updateItem(song, empty);
+	    	        if (empty || song == null || song.getSong() == null) {
+	    	            setText(null);
+	    	        } else {
+	    	            setText(song.getSong());
+	    	        }
+	    	    }
+	    	});
+	      }
+	     /* listView
+	        .getSelectionModel()
+	        .selectedIndexProperty()
+	        .addListener(
+	           (obs, oldVal, newVal) -> 
+	               showItemInputDialog(mainStage)); */
 	
-	public void setMainStage(Stage stage) {
-		mainStage = stage;
-	}
-	
-	
-	
-	//add button, get information from the fields.
-	public void addbutton(ActionEvent e){
-		String name_of_song_temp;
-		String artist_temp;
-		String album_temp;
-		String year_temp;
-		
-		name_of_song_temp = name_of_song_add.getText();
-		artist_temp = artist_add.getText();
-		album_temp = album_add.getText();
-		year_temp = year_add.getText();
-		
-		Songs temp = new Songs(name_of_song_temp, artist_temp, album_temp, year_temp);
-		System.out.println(temp.song + " " + temp.artist + " " + temp.album + " " + temp.year);
-		System.out.println("Add button clicked");
-	}
-	//whenever which button is clicked edit or delete will be called
-	public void whichbutton(ActionEvent e) {
-		Button b = (Button)e.getSource();
-	    if(b == EDIT){
-			System.out.println("Edit button clicked");
-		}
-		else{
-			System.out.println("Delete button clicked");
-		}
-	}
-	
-	/*
-	@FXML
-	private void makeSandwich(ActionEvent evt) {
-		// get meats
-		String meats="";
-		int count=0;
-		if (ham.isSelected()) {
-			meats += "Ham";
-			count++;
-		}
-		if (turkey.isSelected()) {
-			if (count != 0) {
-				meats += ", Turkey";
-			} else {
-				meats += "Turkey";
+	 
+	   
+	   
+	   public void addbutton(ActionEvent e){
+			String name_of_song_temp;
+			String artist_temp;
+			String album_temp;
+			String year_temp;
+			
+			name_of_song_temp = name_of_song_add.getText();
+			artist_temp = artist_add.getText();
+			album_temp = album_add.getText();
+			year_temp = year_add.getText();
+			
+			if(!name_of_song_temp.isEmpty() && !artist_temp.isEmpty()) {
+				Songs temp = new Songs(name_of_song_temp, artist_temp, album_temp, year_temp);
+				if(TestIfDuplicate(temp)) {
+					System.out.println("This is a duplicate :(");
+				}
+				else{
+					System.out.println(temp.song + " " + temp.artist + " " + temp.album + " " + temp.year);
+					System.out.println("Add button clicked");
+					obsList.add(temp);
+				}
 			}
-			count++;
-		}
-		if (roastBeef.isSelected()) {
-			if (count != 0) {
-				meats += ", Roast Beef";
-			} else {
-				meats += "Roast Beef";
+			else{
+				System.out.println("Name of song and artist needed!!!!");
 			}
-			count++;
 		}
-		//System.out.println("Meat: " + meats);
+	   // tests to see whether a song already exists in the list
+	   public boolean TestIfDuplicate(Songs temp) {
+			for(Songs song : obsList) {
+				if(song.getSong().equals(temp.getSong())
+				&& song.getArtist().equals(temp.getArtist())
+				&& song.getAlbum().equals(temp.getAlbum())
+				&& song.getYear().equals(temp.getYear()))
+			{
+					return true;
+				}
+			}
+			return false;
+		}
+	   
+	   
+		//whenever which button is clicked edit or delete will be called
+		public void whichbutton(ActionEvent e) {
+			Button b = (Button)e.getSource();
+		    if(b == EDIT){
+				System.out.println("Edit button clicked");
+			}
+			else{
+				System.out.println("Delete button clicked");
+			}
+		}
 		
-		// get the cheese
-		String cheese = cheeseCombo.getSelectionModel().getSelectedItem();
-		if (cheese == null) { // nothing selected
-			Alert alert = new Alert(AlertType.ERROR);
-			alert.initOwner(mainStage);
-			alert.setTitle("Select Cheese");
-			alert.setHeaderText("Cheese not selected");
-			alert.setContentText("Please select a cheese");
-			alert.showAndWait();
-			return;
-		}
-		//System.out.println("Cheese: " + cheese);
-		
-		// get veggies
-		String veggies="";
-		count=0;
-		if (lettuce.isSelected()) {
-			veggies += "Lettuce";
-			count++;
-		}
-		if (tomato.isSelected()) {
-			if (count != 0) {
-				veggies += ", Tomato";
-			} else {
-				veggies += "Tomato";
-			}
-			count++;
-		}
-		if (olives.isSelected()) {
-			if (count != 0) {
-				veggies += ", Olives";
-			} else {
-				veggies += "Olives";
-			}
-			count++;
-		}
-		//System.out.println("Veggies: " + veggies);
-		sandwich.setText("Meat: " + meats + "\nCheese: " + cheese + "\nVeggies: " + veggies);
-				
-	}
 	
-	private void meat(ActionEvent event) {
-		CheckBox cb = (CheckBox)event.getSource();
-		if (cb.isSelected()) {
-			System.out.println(cb.getText());
-		}
+		
+		/*
+	   private void showItem(Stage mainStage) {                
+		   Alert alert = 
+				   new Alert(AlertType.INFORMATION);
+		   alert.initOwner(mainStage);
+		   alert.setTitle("List Item");
+		   alert.setHeaderText(
+				   "Selected list item properties");
+
+		   String content = "Index: " + 
+				   listView.getSelectionModel()
+		   .getSelectedIndex() + 
+		   "\nValue: " + 
+		   listView.getSelectionModel()
+		   .getSelectedItem();
+
+		   alert.setContentText(content);
+		   alert.showAndWait();
+	   }
+	   */
+	
+
 	}
-	*/
-}
+
